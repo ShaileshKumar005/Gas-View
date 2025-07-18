@@ -18,8 +18,8 @@ def test_api_health_check():
     print("🔍 Testing API Health Check Endpoint...")
     
     try:
-        # Test /api/ endpoint
-        response = requests.get(f"{API_BASE}/", timeout=10)
+        # Test /api endpoint (without trailing slash)
+        response = requests.get(f"{API_BASE}", timeout=10)
         
         print(f"Status Code: {response.status_code}")
         print(f"Response Headers: {dict(response.headers)}")
