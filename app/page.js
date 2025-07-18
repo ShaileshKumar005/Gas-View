@@ -112,29 +112,52 @@ export default function GasTrackerApp() {
   // Initialize with real Web3 service
   useEffect(() => {
     const initializeApp = async () => {
-      try {
-        setIsInitializing(true)
+      setIsInitializing(true)
+      
+      // Set up Web3 service callbacks
+      Web3Service.setCallbacks({
+        onGasUpdate: (chainId, gasData) => {
+          updateChainDataWithHistory(chainId, gasData)
+        },
+        onPriceUpdate: (price) => {
+          setUsdPrice(price)
+        },
+        onConnectionChange: (connected) => {
+          setConnectionStatus(connected)
+        }
+      })
+      
+      // Add timeout for Web3 initialization
+      const initializationTimeout = setTimeout(() => {
+        console.warn('Web3 initialization timed out, falling back to mock data')
+        setIsInitializing(false)
+        setConnectionStatus(false)
         
-        // Set up Web3 service callbacks
-        Web3Service.setCallbacks({
-          onGasUpdate: (chainId, gasData) => {
-            updateChainDataWithHistory(chainId, gasData)
-          },
-          onPriceUpdate: (price) => {
-            setUsdPrice(price)
-          },
-          onConnectionChange: (connected) => {
-            setConnectionStatus(connected)
-          }
+        // Fallback to mock data if Web3 takes too long
+        const mockPrice = 3200 + Math.random() * 400
+        setUsdPrice(mockPrice)
+        
+        const mockGasData = {
+          ethereum: { baseFee: 15000000000, priorityFee: 2000000000, gasPrice: 17000000000, lastBlock: 18500000, timestamp: Date.now() },
+          polygon: { baseFee: 30000000000, priorityFee: 2000000000, gasPrice: 32000000000, lastBlock: 48900000, timestamp: Date.now() },
+          arbitrum: { baseFee: 100000000, priorityFee: 2000000000, gasPrice: 2100000000, lastBlock: 15600000, timestamp: Date.now() }
+        }
+        
+        Object.entries(mockGasData).forEach(([chainId, data]) => {
+          updateChainDataWithHistory(chainId, data)
         })
-        
+      }, 5000) // 5 second timeout
+      
+      try {
         // Initialize Web3 providers
         await Web3Service.initializeProviders()
         
+        clearTimeout(initializationTimeout)
         setIsInitializing(false)
         
       } catch (error) {
         console.error('Failed to initialize app:', error)
+        clearTimeout(initializationTimeout)
         setIsInitializing(false)
         setConnectionStatus(false)
         
