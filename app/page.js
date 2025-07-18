@@ -115,7 +115,7 @@ export default function GasTrackerApp() {
     generateMockData()
     const interval = setInterval(generateMockData, 6000)
     return () => clearInterval(interval)
-  }, [])
+  }, [chains, setUsdPrice, updateChainData])
   
   const handleModeSwitch = (newMode) => {
     setMode(newMode)
