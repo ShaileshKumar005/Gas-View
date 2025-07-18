@@ -3,12 +3,14 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGasStore } from '@/lib/store'
+import Web3Service from '@/lib/web3'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import GasChart from '@/components/GasChart'
 import { 
   Activity, 
   TrendingUp, 
@@ -20,7 +22,8 @@ import {
   DollarSign,
   Sparkles,
   BarChart3,
-  Clock
+  Clock,
+  LineChart
 } from 'lucide-react'
 
 // Animation variants
