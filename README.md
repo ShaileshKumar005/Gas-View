@@ -58,15 +58,18 @@ costUSD = (baseFee + priorityFee) * 21000 * usdPrice
 ## 📂 Project Structure
 
 
-gas-view/
-├── app/ # Live & simulation views (Next.js App Router)
-├── components/ # Reusable UI elements
-├── lib/ # Web3 utilities, Uniswap decoding
-├── public/ # Static assets
-├── store/ # Zustand store
-├── styles/ # Tailwind & globals
-├── types/ # TypeScript interfaces
-└── README.md
+Gas-View/
+├── app/               # Next.js App Router pages and components
+│   ├── live/          # Live gas tracking UI and logic
+│   ├── simulate/      # Wallet simulation UI and logic
+│   └── layout.tsx     # Shared layout for pages
+├── components/        # Reusable React components (buttons, cards, charts)
+├── lib/               # Core logic: gas fetchers, log parsers, utilities
+├── store/             # Zustand store and state machine logic
+├── styles/            # TailwindCSS config and global styles
+├── types/             # TypeScript type definitions
+├── public/            # Static assets like images or icons
+└── README.md          # Project documentation
 
 
 ---
