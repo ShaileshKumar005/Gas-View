@@ -478,8 +478,9 @@ export default function GasTrackerApp() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
-            className="xl:col-span-2"
+            className="xl:col-span-2 space-y-6"
           >
+            {/* Gas Cards */}
             <motion.div 
               variants={containerVariants}
               initial="hidden"
@@ -576,6 +577,44 @@ export default function GasTrackerApp() {
                   </motion.div>
                 ))}
               </AnimatePresence>
+            </motion.div>
+            
+            {/* Gas Price Chart */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+            >
+              <Card className="hover:shadow-lg transition-all duration-300">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <LineChart className="w-5 h-5 text-primary" />
+                      <CardTitle>Gas Price History</CardTitle>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {Object.entries(chains).map(([chainId, chain]) => (
+                        <Button
+                          key={chainId}
+                          variant={selectedChartChain === chainId ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSelectedChartChain(chainId)}
+                          className="gap-2"
+                        >
+                          <div 
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: chain.color }}
+                          />
+                          {chain.name}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <GasChart chainId={selectedChartChain} />
+                </CardContent>
+              </Card>
             </motion.div>
           </motion.div>
           
