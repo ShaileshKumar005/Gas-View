@@ -45,37 +45,29 @@ export default function GasTrackerApp() {
       try {
         setIsInitializing(true)
         
-        // Set up callbacks
-        web3Service.setCallbacks({
-          onGasUpdate: (chainId, gasData) => {
-            updateChainData(chainId, gasData)
-            
-            // Add to history for charting (15-minute intervals)
-            const now = Date.now()
-            const intervalMs = 15 * 60 * 1000 // 15 minutes
-            const intervalStart = Math.floor(now / intervalMs) * intervalMs
-            
-            addGasHistory(chainId, {
-              timestamp: Math.floor(intervalStart / 1000),
-              gasPrice: gasData.gasPrice,
-              baseFee: gasData.baseFee,
-              priorityFee: gasData.priorityFee
-            })
-          },
+        // Skip actual Web3 initialization for demo - use mock data instead
+        setConnectionStatus(true)
+        
+        // Set initial mock data
+        const mockPrice = 3200 + Math.random() * 400 // $3200-$3600
+        setUsdPrice(mockPrice)
+        
+        Object.keys(chains).forEach(chainId => {
+          const baseGas = chainId === 'ethereum' ? 15 : chainId === 'polygon' ? 30 : 0.1
+          const variation = 0.8 + Math.random() * 0.4 // ±20% variation
+          const baseFee = Math.floor(baseGas * variation * 1e9)
+          const priorityFee = Math.floor(2 * 1e9)
           
-          onPriceUpdate: (price) => {
-            setUsdPrice(price)
-          },
-          
-          onConnectionChange: (connected) => {
-            setConnectionStatus(connected)
-          }
+          updateChainData(chainId, {
+            baseFee,
+            priorityFee,
+            gasPrice: baseFee + priorityFee,
+            lastBlock: 18000000 + Math.floor(Math.random() * 1000)
+          })
         })
         
-        // Initialize providers
-        await web3Service.initializeProviders()
-        
         setIsInitializing(false)
+        
       } catch (error) {
         console.error('Failed to initialize Web3:', error)
         setIsInitializing(false)
@@ -87,7 +79,11 @@ export default function GasTrackerApp() {
     
     // Cleanup on unmount
     return () => {
-      web3Service.disconnect()
+      try {
+        web3Service.disconnect()
+      } catch (error) {
+        console.error('Error disconnecting Web3:', error)
+      }
     }
   }, [])
   
