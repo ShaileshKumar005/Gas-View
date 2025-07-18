@@ -9,6 +9,7 @@ export default function GasChart({ chainId }) {
   const chartRef = useRef()
   const seriesRef = useRef()
   const chains = useGasStore(state => state.chains)
+  const getOHLCData = useGasStore(state => state.getOHLCData)
   const chain = chains[chainId]
   
   useEffect(() => {
@@ -19,21 +20,23 @@ export default function GasChart({ chainId }) {
       width: chartContainerRef.current.clientWidth,
       height: 300,
       layout: {
-        background: { color: '#1a1a1a' },
-        textColor: '#D1D5DB',
+        background: { color: 'transparent' },
+        textColor: 'hsl(var(--foreground))',
       },
       grid: {
-        vertLines: { color: '#2D3748' },
-        horzLines: { color: '#2D3748' },
+        vertLines: { color: 'hsl(var(--border))' },
+        horzLines: { color: 'hsl(var(--border))' },
       },
       crosshair: {
         mode: 1,
       },
       rightPriceScale: {
-        borderColor: '#485563',
+        borderColor: 'hsl(var(--border))',
+        textColor: 'hsl(var(--foreground))',
       },
       timeScale: {
-        borderColor: '#485563',
+        borderColor: 'hsl(var(--border))',
+        textColor: 'hsl(var(--foreground))',
         timeVisible: true,
         secondsVisible: false,
       },
@@ -71,31 +74,44 @@ export default function GasChart({ chainId }) {
   
   // Update chart data when history changes
   useEffect(() => {
-    if (!seriesRef.current || !chain.history.length) return
+    if (!seriesRef.current || !chain) return
     
-    // Convert history to candlestick data (15-minute intervals)
-    const candlestickData = chain.history.map(point => ({
-      time: Math.floor(point.timestamp / 60) * 60, // Round to minute
-      open: point.gasPrice / 1e9, // Convert to gwei
-      high: point.gasPrice / 1e9,
-      low: point.gasPrice / 1e9,
-      close: point.gasPrice / 1e9,
-    }))
+    // Get OHLC data from store
+    const ohlcData = getOHLCData(chainId, 15) // 15-minute intervals
     
-    seriesRef.current.setData(candlestickData)
-  }, [chain.history])
+    if (ohlcData.length > 0) {
+      seriesRef.current.setData(ohlcData)
+    } else {
+      // Fallback to simple line data if no OHLC data
+      const lineData = chain.history.map(point => ({
+        time: Math.floor((point.timestamp || Date.now()) / 1000),
+        value: point.gasPrice / 1e9 // Convert to gwei
+      }))
+      
+      if (lineData.length > 0) {
+        // Remove candlestick series and add line series
+        chartRef.current.removeSeries(seriesRef.current)
+        const lineSeries = chartRef.current.addLineSeries({
+          color: chain.color,
+          lineWidth: 2,
+        })
+        lineSeries.setData(lineData)
+        seriesRef.current = lineSeries
+      }
+    }
+  }, [chain?.history, chainId, getOHLCData, chain?.color])
   
   return (
-    <div className="w-full h-[300px] bg-card rounded-lg p-4">
+    <div className="w-full h-[300px] rounded-lg">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">{chain.name} Gas Price</h3>
+        <h3 className="text-lg font-semibold">{chain?.name} Gas Price</h3>
         <div className="flex items-center gap-2">
           <div 
             className="w-3 h-3 rounded-full"
-            style={{ backgroundColor: chain.color }}
+            style={{ backgroundColor: chain?.color }}
           />
           <span className="text-sm text-muted-foreground">
-            {(chain.gasPrice / 1e9).toFixed(2)} gwei
+            {(chain?.gasPrice / 1e9).toFixed(2)} gwei
           </span>
         </div>
       </div>
