@@ -91,48 +91,45 @@ export default function GasTrackerApp() {
     setMode,
     usdPrice,
     setUsdPrice,
-    updateChainData,
+    updateChainDataWithHistory,
     setConnectionStatus,
     isConnected,
     lastUpdateTime,
     chains,
     simulationAmount,
-    setSimulationAmount
+    setSimulationAmount,
+    getOHLCData
   } = useGasStore()
   
   const [isInitializing, setIsInitializing] = useState(true)
   const [mounted, setMounted] = useState(false)
+  const [selectedChartChain, setSelectedChartChain] = useState('ethereum')
   
   useEffect(() => {
     setMounted(true)
   }, [])
   
-  // Initialize with mock data
+  // Initialize with real Web3 service
   useEffect(() => {
     const initializeApp = async () => {
       try {
         setIsInitializing(true)
         
-        // Simulate initialization delay for better UX
-        await new Promise(resolve => setTimeout(resolve, 1500))
-        
-        // Set connection status
-        setConnectionStatus(true)
-        
-        // Set mock ETH price
-        const mockPrice = 3200 + Math.random() * 400
-        setUsdPrice(mockPrice)
-        
-        // Set mock gas data for each chain
-        const mockGasData = {
-          ethereum: { baseFee: 15000000000, priorityFee: 2000000000, gasPrice: 17000000000, lastBlock: 18500000 },
-          polygon: { baseFee: 30000000000, priorityFee: 2000000000, gasPrice: 32000000000, lastBlock: 48900000 },
-          arbitrum: { baseFee: 100000000, priorityFee: 2000000000, gasPrice: 2100000000, lastBlock: 15600000 }
-        }
-        
-        Object.entries(mockGasData).forEach(([chainId, data]) => {
-          updateChainData(chainId, data)
+        // Set up Web3 service callbacks
+        Web3Service.setCallbacks({
+          onGasUpdate: (chainId, gasData) => {
+            updateChainDataWithHistory(chainId, gasData)
+          },
+          onPriceUpdate: (price) => {
+            setUsdPrice(price)
+          },
+          onConnectionChange: (connected) => {
+            setConnectionStatus(connected)
+          }
         })
+        
+        // Initialize Web3 providers
+        await Web3Service.initializeProviders()
         
         setIsInitializing(false)
         
@@ -140,46 +137,70 @@ export default function GasTrackerApp() {
         console.error('Failed to initialize app:', error)
         setIsInitializing(false)
         setConnectionStatus(false)
+        
+        // Fallback to mock data if Web3 fails
+        const mockPrice = 3200 + Math.random() * 400
+        setUsdPrice(mockPrice)
+        
+        const mockGasData = {
+          ethereum: { baseFee: 15000000000, priorityFee: 2000000000, gasPrice: 17000000000, lastBlock: 18500000, timestamp: Date.now() },
+          polygon: { baseFee: 30000000000, priorityFee: 2000000000, gasPrice: 32000000000, lastBlock: 48900000, timestamp: Date.now() },
+          arbitrum: { baseFee: 100000000, priorityFee: 2000000000, gasPrice: 2100000000, lastBlock: 15600000, timestamp: Date.now() }
+        }
+        
+        Object.entries(mockGasData).forEach(([chainId, data]) => {
+          updateChainDataWithHistory(chainId, data)
+        })
       }
     }
     
     initializeApp()
-  }, [setConnectionStatus, setUsdPrice, updateChainData])
-  
-  // Update data periodically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const mockPrice = 3200 + Math.random() * 400
-      setUsdPrice(mockPrice)
-      
-      const mockGasData = {
-        ethereum: { 
-          baseFee: 15000000000 + Math.random() * 5000000000, 
-          priorityFee: 2000000000, 
-          gasPrice: 17000000000 + Math.random() * 5000000000,
-          lastBlock: 18500000 + Math.floor(Math.random() * 100)
-        },
-        polygon: { 
-          baseFee: 30000000000 + Math.random() * 10000000000, 
-          priorityFee: 2000000000, 
-          gasPrice: 32000000000 + Math.random() * 10000000000,
-          lastBlock: 48900000 + Math.floor(Math.random() * 100)
-        },
-        arbitrum: { 
-          baseFee: 100000000 + Math.random() * 50000000, 
-          priorityFee: 2000000000, 
-          gasPrice: 2100000000 + Math.random() * 50000000,
-          lastBlock: 15600000 + Math.floor(Math.random() * 100)
-        }
-      }
-      
-      Object.entries(mockGasData).forEach(([chainId, data]) => {
-        updateChainData(chainId, data)
-      })
-    }, 6000)
     
-    return () => clearInterval(interval)
-  }, [setUsdPrice, updateChainData])
+    // Cleanup on unmount
+    return () => {
+      Web3Service.disconnect()
+    }
+  }, [updateChainDataWithHistory, setUsdPrice, setConnectionStatus])
+  
+  // Fallback periodic updates if Web3 is not working
+  useEffect(() => {
+    if (!isConnected) {
+      const interval = setInterval(() => {
+        const mockPrice = 3200 + Math.random() * 400
+        setUsdPrice(mockPrice)
+        
+        const mockGasData = {
+          ethereum: { 
+            baseFee: 15000000000 + Math.random() * 5000000000, 
+            priorityFee: 2000000000, 
+            gasPrice: 17000000000 + Math.random() * 5000000000,
+            lastBlock: 18500000 + Math.floor(Math.random() * 100),
+            timestamp: Date.now()
+          },
+          polygon: { 
+            baseFee: 30000000000 + Math.random() * 10000000000, 
+            priorityFee: 2000000000, 
+            gasPrice: 32000000000 + Math.random() * 10000000000,
+            lastBlock: 48900000 + Math.floor(Math.random() * 100),
+            timestamp: Date.now()
+          },
+          arbitrum: { 
+            baseFee: 100000000 + Math.random() * 50000000, 
+            priorityFee: 2000000000, 
+            gasPrice: 2100000000 + Math.random() * 50000000,
+            lastBlock: 15600000 + Math.floor(Math.random() * 100),
+            timestamp: Date.now()
+          }
+        }
+        
+        Object.entries(mockGasData).forEach(([chainId, data]) => {
+          updateChainDataWithHistory(chainId, data)
+        })
+      }, 6000)
+      
+      return () => clearInterval(interval)
+    }
+  }, [isConnected, setUsdPrice, updateChainDataWithHistory])
   
   const formatGasPrice = (gasPrice) => {
     return (gasPrice / 1e9).toFixed(2)
