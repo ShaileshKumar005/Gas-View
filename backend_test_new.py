@@ -11,7 +11,7 @@ from datetime import datetime
 
 # Test both local and external URLs
 LOCAL_URL = "http://localhost:3000"
-EXTERNAL_URL = "https://a9b098cc-4870-4e65-b113-ba29f4f1cd7a.preview.emergentagent.com"
+EXTERNAL_URL = "https://a305279c-ce53-41b6-827d-59dd7b5ffcfd.preview.emergentagent.com"
 
 def test_api_health_check_local():
     """Test the API health check endpoint locally"""
