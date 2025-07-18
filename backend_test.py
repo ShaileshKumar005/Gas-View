@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Get base URL from environment
-BASE_URL = "https://a305279c-ce53-41b6-827d-59dd7b5ffcfd.preview.emergentagent.com"
+BASE_URL = "https://361f2f2a-9e0e-4a29-bd0b-577b5db97a58.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 def test_api_health_check():
