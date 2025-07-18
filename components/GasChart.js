@@ -21,22 +21,22 @@ export default function GasChart({ chainId }) {
       height: 300,
       layout: {
         background: { color: 'transparent' },
-        textColor: 'hsl(var(--foreground))',
+        textColor: '#71717a',
       },
       grid: {
-        vertLines: { color: 'hsl(var(--border))' },
-        horzLines: { color: 'hsl(var(--border))' },
+        vertLines: { color: '#27272a' },
+        horzLines: { color: '#27272a' },
       },
       crosshair: {
         mode: 1,
       },
       rightPriceScale: {
-        borderColor: 'hsl(var(--border))',
-        textColor: 'hsl(var(--foreground))',
+        borderColor: '#27272a',
+        textColor: '#71717a',
       },
       timeScale: {
-        borderColor: 'hsl(var(--border))',
-        textColor: 'hsl(var(--foreground))',
+        borderColor: '#27272a',
+        textColor: '#71717a',
         timeVisible: true,
         secondsVisible: false,
       },
