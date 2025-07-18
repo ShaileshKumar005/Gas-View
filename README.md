@@ -56,13 +56,17 @@ Cross-chain cost comparison with smooth slide/fade effects.
 Shimmer loaders during state change.
 
 🧠 Tech Stack
-Area	Stack Used
-Frontend	Next.js (App Router), React 18, TypeScript
-Styling	TailwindCSS
-State Management	Zustand with custom state machine for mode switching
-Web3 Integration	Ethers.js, WebSocketProvider, Uniswap V3 Pool log decoding
-Charts	Lightweight-Charts
-Deployment	Vercel
+Frontend	: Next.js (App Router), React 18, TypeScript
+
+Styling :	TailwindCSS
+
+State Management :	Zustand with custom state machine for mode switching
+
+Web3 Integration :	Ethers.js, WebSocketProvider, Uniswap V3 Pool log decoding
+
+Charts	: Lightweight-Charts
+
+Deployment :	Vercel
 
 📂 Project Structure (Simplified)
 
@@ -78,7 +82,7 @@ gas-view/
 ├── components/          # Reusable UI components
 ├── types/               # TypeScript types and interfaces
 └── README.md
-📽️ Demo Video
+
 
 
 🚀 Running Locally
@@ -92,12 +96,16 @@ npm install
 
 # 3. Run the app
 npm run dev
+
+
 Ensure you have access to public WebSocket RPCs for Ethereum, Polygon, and Arbitrum.
 
 
 🙌 Credits
 Built by Shailesh Kumar T S
+
 Inspired by the need for transparent, real-time, and decentralized gas tracking tools.
 
 📜 License
+
 MIT License — feel free to fork, clone, and build on top of this.
