@@ -1,25 +1,22 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useGasStore } from '@/lib/store'
-import web3Service from '@/lib/web3'
-import GasTracker from '@/components/GasTracker'
-import GasChart from '@/components/GasChart'
-import SimulationPanel from '@/components/SimulationPanel'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { 
   Activity, 
   TrendingUp, 
   Zap, 
-  BarChart3, 
   Calculator,
   RefreshCw,
   Wifi,
-  WifiOff
+  WifiOff,
+  DollarSign
 } from 'lucide-react'
 
 export default function GasTrackerApp() {
@@ -29,97 +26,133 @@ export default function GasTrackerApp() {
     usdPrice,
     setUsdPrice,
     updateChainData,
-    addGasHistory,
     setConnectionStatus,
     isConnected,
     lastUpdateTime,
-    chains
+    chains,
+    simulationAmount,
+    setSimulationAmount
   } = useGasStore()
   
   const [isInitializing, setIsInitializing] = useState(true)
-  const [activeChart, setActiveChart] = useState('ethereum')
   
-  // Initialize Web3 connections
+  // Initialize with mock data
   useEffect(() => {
-    const initializeWeb3 = async () => {
+    const initializeApp = () => {
       try {
         setIsInitializing(true)
         
-        // Skip actual Web3 initialization for demo - use mock data instead
+        // Set connection status
         setConnectionStatus(true)
         
-        // Set initial mock data
-        const mockPrice = 3200 + Math.random() * 400 // $3200-$3600
+        // Set mock ETH price
+        const mockPrice = 3200 + Math.random() * 400
         setUsdPrice(mockPrice)
         
-        // Get chains from store
-        const currentChains = useGasStore.getState().chains
+        // Set mock gas data for each chain
+        const mockGasData = {
+          ethereum: { baseFee: 15000000000, priorityFee: 2000000000, gasPrice: 17000000000, lastBlock: 18500000 },
+          polygon: { baseFee: 30000000000, priorityFee: 2000000000, gasPrice: 32000000000, lastBlock: 48900000 },
+          arbitrum: { baseFee: 100000000, priorityFee: 2000000000, gasPrice: 2100000000, lastBlock: 15600000 }
+        }
         
-        Object.keys(currentChains).forEach(chainId => {
-          const baseGas = chainId === 'ethereum' ? 15 : chainId === 'polygon' ? 30 : 0.1
-          const variation = 0.8 + Math.random() * 0.4 // ±20% variation
-          const baseFee = Math.floor(baseGas * variation * 1e9)
-          const priorityFee = Math.floor(2 * 1e9)
-          
-          updateChainData(chainId, {
-            baseFee,
-            priorityFee,
-            gasPrice: baseFee + priorityFee,
-            lastBlock: 18000000 + Math.floor(Math.random() * 1000)
-          })
+        Object.entries(mockGasData).forEach(([chainId, data]) => {
+          updateChainData(chainId, data)
         })
         
         setIsInitializing(false)
         
       } catch (error) {
-        console.error('Failed to initialize Web3:', error)
+        console.error('Failed to initialize app:', error)
         setIsInitializing(false)
         setConnectionStatus(false)
       }
     }
     
-    initializeWeb3()
-  }, [])
+    initializeApp()
+  }, [setConnectionStatus, setUsdPrice, updateChainData])
   
-  // Mock data for demonstration (remove when real data is flowing)
+  // Update data periodically
   useEffect(() => {
-    const generateMockData = () => {
-      const mockPrice = 3200 + Math.random() * 400 // $3200-$3600
+    const interval = setInterval(() => {
+      const mockPrice = 3200 + Math.random() * 400
       setUsdPrice(mockPrice)
       
-      Object.keys(chains).forEach(chainId => {
-        const baseGas = chainId === 'ethereum' ? 15 : chainId === 'polygon' ? 30 : 0.1
-        const variation = 0.8 + Math.random() * 0.4 // ±20% variation
-        const baseFee = Math.floor(baseGas * variation * 1e9)
-        const priorityFee = Math.floor(2 * 1e9)
-        
-        updateChainData(chainId, {
-          baseFee,
-          priorityFee,
-          gasPrice: baseFee + priorityFee,
-          lastBlock: 18000000 + Math.floor(Math.random() * 1000)
-        })
+      const mockGasData = {
+        ethereum: { 
+          baseFee: 15000000000 + Math.random() * 5000000000, 
+          priorityFee: 2000000000, 
+          gasPrice: 17000000000 + Math.random() * 5000000000,
+          lastBlock: 18500000 + Math.floor(Math.random() * 100)
+        },
+        polygon: { 
+          baseFee: 30000000000 + Math.random() * 10000000000, 
+          priorityFee: 2000000000, 
+          gasPrice: 32000000000 + Math.random() * 10000000000,
+          lastBlock: 48900000 + Math.floor(Math.random() * 100)
+        },
+        arbitrum: { 
+          baseFee: 100000000 + Math.random() * 50000000, 
+          priorityFee: 2000000000, 
+          gasPrice: 2100000000 + Math.random() * 50000000,
+          lastBlock: 15600000 + Math.floor(Math.random() * 100)
+        }
+      }
+      
+      Object.entries(mockGasData).forEach(([chainId, data]) => {
+        updateChainData(chainId, data)
       })
-    }
+    }, 6000)
     
-    generateMockData()
-    const interval = setInterval(generateMockData, 6000)
     return () => clearInterval(interval)
-  }, [chains, setUsdPrice, updateChainData])
+  }, [setUsdPrice, updateChainData])
   
-  const handleModeSwitch = (newMode) => {
-    setMode(newMode)
+  const formatGasPrice = (gasPrice) => {
+    return (gasPrice / 1e9).toFixed(2)
   }
   
   const formatTime = (timestamp) => {
-    if (!timestamp) return 'Never'
+    if (!timestamp) return new Date().toLocaleTimeString()
     return new Date(timestamp).toLocaleTimeString()
   }
   
-  const getTotalGasSpent = () => {
-    return Object.values(chains).reduce((total, chain) => {
-      return total + (chain.gasPrice / 1e9)
-    }, 0) / 3
+  const formatUSD = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 6
+    }).format(amount)
+  }
+  
+  const getGasCostUSD = (chainId) => {
+    const chain = chains[chainId]
+    if (!chain) return 0
+    const gasLimit = 21000
+    const gasCostWei = (chain.baseFee + chain.priorityFee) * gasLimit
+    const gasCostEth = gasCostWei / Math.pow(10, 18)
+    return gasCostEth * usdPrice
+  }
+  
+  const getTransactionCostUSD = (chainId) => {
+    const gasCost = getGasCostUSD(chainId)
+    const transactionValue = simulationAmount * usdPrice
+    return gasCost + transactionValue
+  }
+  
+  const getCheapestChain = () => {
+    let cheapest = null
+    let lowestCost = Infinity
+    
+    Object.entries(chains).forEach(([chainId, chain]) => {
+      const cost = getGasCostUSD(chainId)
+      if (cost < lowestCost) {
+        lowestCost = cost
+        cheapest = chainId
+      }
+    })
+    
+    return cheapest
   }
   
   if (isInitializing) {
@@ -128,7 +161,7 @@ export default function GasTrackerApp() {
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
           <h2 className="text-2xl font-bold">Initializing Gas Tracker</h2>
-          <p className="text-muted-foreground">Connecting to blockchain networks...</p>
+          <p className="text-muted-foreground">Loading blockchain data...</p>
         </div>
       </div>
     )
@@ -170,7 +203,7 @@ export default function GasTrackerApp() {
           <div className="flex items-center gap-2">
             <Button
               variant={mode === 'live' ? 'default' : 'outline'}
-              onClick={() => handleModeSwitch('live')}
+              onClick={() => setMode('live')}
               className="gap-2"
             >
               <Activity className="w-4 h-4" />
@@ -178,7 +211,7 @@ export default function GasTrackerApp() {
             </Button>
             <Button
               variant={mode === 'simulation' ? 'default' : 'outline'}
-              onClick={() => handleModeSwitch('simulation')}
+              onClick={() => setMode('simulation')}
               className="gap-2"
             >
               <Calculator className="w-4 h-4" />
@@ -188,11 +221,7 @@ export default function GasTrackerApp() {
         </motion.div>
         
         {/* Stats Bar */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
@@ -209,142 +238,233 @@ export default function GasTrackerApp() {
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-yellow-500" />
-                <span className="text-sm text-muted-foreground">Avg Gas</span>
-              </div>
-              <p className="text-2xl font-bold text-yellow-500">
-                {getTotalGasSpent().toFixed(2)} gwei
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-blue-500" />
                 <span className="text-sm text-muted-foreground">Networks</span>
               </div>
-              <p className="text-2xl font-bold text-blue-500">3</p>
+              <p className="text-2xl font-bold text-yellow-500">3</p>
             </CardContent>
           </Card>
           
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-purple-500" />
+                <Activity className="w-4 h-4 text-blue-500" />
                 <span className="text-sm text-muted-foreground">Status</span>
               </div>
-              <p className="text-2xl font-bold text-purple-500">
+              <p className="text-2xl font-bold text-blue-500">
                 {isConnected ? 'Live' : 'Offline'}
               </p>
             </CardContent>
           </Card>
-        </motion.div>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-purple-500" />
+                <span className="text-sm text-muted-foreground">Mode</span>
+              </div>
+              <p className="text-2xl font-bold text-purple-500 capitalize">
+                {mode}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
         
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Gas Tracker */}
-          <div className="lg:col-span-2 space-y-6">
-            <GasTracker />
-            
-            {/* Charts */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5" />
-                    Gas Price History
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Tabs value={activeChart} onValueChange={setActiveChart}>
-                    <TabsList className="grid w-full grid-cols-3">
-                      <TabsTrigger value="ethereum">Ethereum</TabsTrigger>
-                      <TabsTrigger value="polygon">Polygon</TabsTrigger>
-                      <TabsTrigger value="arbitrum">Arbitrum</TabsTrigger>
-                    </TabsList>
+          <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {Object.entries(chains).map(([chainId, chain]) => (
+                <motion.div
+                  key={chainId}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Card className="relative overflow-hidden">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-4 h-4 rounded-full"
+                            style={{ backgroundColor: chain.color }}
+                          />
+                          <CardTitle className="text-lg">{chain.name}</CardTitle>
+                        </div>
+                        <Badge variant="default">Live</Badge>
+                      </div>
+                    </CardHeader>
                     
-                    <TabsContent value="ethereum">
-                      <GasChart chainId="ethereum" />
-                    </TabsContent>
-                    <TabsContent value="polygon">
-                      <GasChart chainId="polygon" />
-                    </TabsContent>
-                    <TabsContent value="arbitrum">
-                      <GasChart chainId="arbitrum" />
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
-            </motion.div>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Zap className="w-4 h-4 text-yellow-500" />
+                          <span className="text-sm text-muted-foreground">Gas Price</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-bold">
+                            {formatGasPrice(chain.gasPrice)}
+                          </span>
+                          <span className="text-sm text-muted-foreground">gwei</span>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Base Fee</p>
+                          <p className="font-medium">{formatGasPrice(chain.baseFee)} gwei</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Priority Fee</p>
+                          <p className="font-medium">{formatGasPrice(chain.priorityFee)} gwei</p>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-2 border-t">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Block #{chain.lastBlock}</span>
+                          <span className="text-muted-foreground">
+                            {formatTime(Date.now())}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
           </div>
           
           {/* Right Column - Simulation Panel */}
           <div className="space-y-6">
-            <AnimatePresence mode="wait">
-              {mode === 'simulation' && (
-                <motion.div
-                  key="simulation"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <SimulationPanel />
-                </motion.div>
-              )}
-              
-              {mode === 'live' && (
-                <motion.div
-                  key="live-info"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Activity className="w-5 h-5 text-green-500" />
-                        Live Data Feed
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground">
-                          Real-time gas prices from multiple blockchain networks
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                          <span className="text-sm">Updates every 6 seconds</span>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <h4 className="font-semibold">Data Sources:</h4>
-                        <ul className="text-sm space-y-1 text-muted-foreground">
-                          <li>• Ethereum: WebSocket RPC</li>
-                          <li>• Polygon: WebSocket RPC</li>
-                          <li>• Arbitrum: WebSocket RPC</li>
-                          <li>• ETH/USD: Uniswap V3 Pool</li>
-                        </ul>
-                      </div>
-                      
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setMode('simulation')}
-                        className="w-full"
-                      >
-                        Switch to Simulation Mode
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {mode === 'simulation' && (
+              <Card className="w-full">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Calculator className="w-5 h-5 text-blue-500" />
+                    <CardTitle>Transaction Cost Simulator</CardTitle>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="amount">Transfer Amount (ETH)</Label>
+                    <Input
+                      id="amount"
+                      type="number"
+                      placeholder="0.1"
+                      value={simulationAmount}
+                      onChange={(e) => setSimulationAmount(parseFloat(e.target.value) || 0)}
+                      step="0.01"
+                      min="0"
+                      className="text-lg"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      ≈ {formatUSD(simulationAmount * usdPrice)} USD
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h4 className="font-semibold flex items-center gap-2">
+                      <DollarSign className="w-4 h-4" />
+                      Cost Comparison
+                    </h4>
+                    
+                    <div className="grid gap-3">
+                      {Object.entries(chains).map(([chainId, chain]) => {
+                        const gasCost = getGasCostUSD(chainId)
+                        const totalCost = getTransactionCostUSD(chainId)
+                        const isCheapest = chainId === getCheapestChain()
+                        
+                        return (
+                          <div
+                            key={chainId}
+                            className={`p-4 rounded-lg border-2 transition-all ${
+                              isCheapest 
+                                ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
+                                : 'border-border bg-card'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <div 
+                                  className="w-3 h-3 rounded-full"
+                                  style={{ backgroundColor: chain.color }}
+                                />
+                                <span className="font-medium">{chain.name}</span>
+                                {isCheapest && (
+                                  <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                                    Cheapest
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-lg font-bold">{formatUSD(totalCost)}</span>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <div className="flex items-center gap-1">
+                                  <Zap className="w-3 h-3 text-yellow-500" />
+                                  <span className="text-muted-foreground">Gas Cost</span>
+                                </div>
+                                <p className="font-medium">{formatUSD(gasCost)}</p>
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-1">
+                                  <DollarSign className="w-3 h-3 text-green-500" />
+                                  <span className="text-muted-foreground">Transfer Value</span>
+                                </div>
+                                <p className="font-medium">{formatUSD(simulationAmount * usdPrice)}</p>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {mode === 'live' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-green-500" />
+                    Live Data Feed
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      Real-time gas prices from multiple blockchain networks
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      <span className="text-sm">Updates every 6 seconds</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h4 className="font-semibold">Data Sources:</h4>
+                    <ul className="text-sm space-y-1 text-muted-foreground">
+                      <li>• Ethereum: WebSocket RPC</li>
+                      <li>• Polygon: WebSocket RPC</li>
+                      <li>• Arbitrum: WebSocket RPC</li>
+                      <li>• ETH/USD: Uniswap V3 Pool</li>
+                    </ul>
+                  </div>
+                  
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setMode('simulation')}
+                    className="w-full"
+                  >
+                    Switch to Simulation Mode
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>
