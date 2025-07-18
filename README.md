@@ -55,25 +55,6 @@ costUSD = (baseFee + priorityFee) * 21000 * usdPrice
 
 ---
 
-## 📂 Project Structure
-
-
-Gas-View/
-├── app/               # Next.js App Router pages and components
-│   ├── live/          # Live gas tracking UI and logic
-│   ├── simulate/      # Wallet simulation UI and logic
-│   └── layout.tsx     # Shared layout for pages
-├── components/        # Reusable React components (buttons, cards, charts)
-├── lib/               # Core logic: gas fetchers, log parsers, utilities
-├── store/             # Zustand store and state machine logic
-├── styles/            # TailwindCSS config and global styles
-├── types/             # TypeScript type definitions
-├── public/            # Static assets like images or icons
-└── README.md          # Project documentation
-
-
----
-
 ## 🚀 Getting Started
 
 Clone the repo:
@@ -89,8 +70,10 @@ Run the development server:
 
 npm run dev
 
+---
+<img width="1918" height="922" alt="image" src="https://github.com/user-attachments/assets/dc59fa2d-e167-4132-80e9-2236a914c995" />
 
-
+---
 🙌 Credits
 Built by Shailesh Kumar T S
 
