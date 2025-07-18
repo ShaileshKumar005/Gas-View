@@ -52,7 +52,10 @@ export default function GasTrackerApp() {
         const mockPrice = 3200 + Math.random() * 400 // $3200-$3600
         setUsdPrice(mockPrice)
         
-        Object.keys(chains).forEach(chainId => {
+        // Get chains from store
+        const currentChains = useGasStore.getState().chains
+        
+        Object.keys(currentChains).forEach(chainId => {
           const baseGas = chainId === 'ethereum' ? 15 : chainId === 'polygon' ? 30 : 0.1
           const variation = 0.8 + Math.random() * 0.4 // ±20% variation
           const baseFee = Math.floor(baseGas * variation * 1e9)
@@ -76,15 +79,6 @@ export default function GasTrackerApp() {
     }
     
     initializeWeb3()
-    
-    // Cleanup on unmount
-    return () => {
-      try {
-        web3Service.disconnect()
-      } catch (error) {
-        console.error('Error disconnecting Web3:', error)
-      }
-    }
   }, [])
   
   // Mock data for demonstration (remove when real data is flowing)
