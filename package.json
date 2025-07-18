@@ -61,7 +61,12 @@
         "tailwindcss-animate": "^1.0.7",
         "uuid": "^9.0.1",
         "vaul": "^1.1.2",
-        "zod": "^3.25.67"
+        "zod": "^3.25.67",
+        "ethers": "^6.13.2",
+        "zustand": "^4.5.2",
+        "lightweight-charts": "^4.2.0",
+        "framer-motion": "^11.3.8",
+        "web3": "^4.11.1"
     },
     "devDependencies": {
         "autoprefixer": "^10.4.19",
