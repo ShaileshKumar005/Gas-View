@@ -106,7 +106,7 @@ def test_api_post_method():
     
     try:
         # Test POST to health endpoint
-        response = requests.post(f"{API_BASE}/", json={"test": "data"}, timeout=10)
+        response = requests.post(f"{API_BASE}", json={"test": "data"}, timeout=10)
         
         print(f"Status Code: {response.status_code}")
         
