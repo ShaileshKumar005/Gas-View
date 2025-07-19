@@ -71,7 +71,22 @@ Run the development server:
 npm run dev
 
 ---
-<img width="1918" height="922" alt="image" src="https://github.com/user-attachments/assets/dc59fa2d-e167-4132-80e9-2236a914c995" />
+Live Mode :
+
+<img width="1873" height="883" alt="image" src="https://github.com/user-attachments/assets/3948ce42-3b4d-4b82-a650-bb4d63292e31" />
+
+Simulation Mode :
+
+<img width="1756" height="892" alt="image" src="https://github.com/user-attachments/assets/ff5b763f-6ad5-46f9-9f90-a4b371d56ef9" />
+
+Charts :
+
+<img width="1145" height="766" alt="image" src="https://github.com/user-attachments/assets/bfa05c7e-5eac-4837-abbd-30283d74cb31" />
+
+
+
+
+
 
 ---
 🙌 Credits
