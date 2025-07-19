@@ -115,48 +115,76 @@ export default function GasTrackerApp() {
       console.log("Starting app initialization...")
       setIsInitializing(true)
       
-      // For now, skip Web3 and go directly to mock data
-      console.log('Using mock data for stable operation...')
-      
-      // Setup mock data immediately
-      const mockPrice = 3200 + Math.random() * 400
-      setUsdPrice(mockPrice)
-      
-      const mockGasData = {
-        ethereum: { 
-          baseFee: 15000000000, 
-          priorityFee: 2000000000, 
-          gasPrice: 17000000000, 
-          lastBlock: 18500000, 
-          timestamp: Date.now() 
-        },
-        polygon: { 
-          baseFee: 30000000000, 
-          priorityFee: 2000000000, 
-          gasPrice: 32000000000, 
-          lastBlock: 48900000, 
-          timestamp: Date.now() 
-        },
-        arbitrum: { 
-          baseFee: 100000000, 
-          priorityFee: 2000000000, 
-          gasPrice: 2100000000, 
-          lastBlock: 15600000, 
-          timestamp: Date.now() 
+      try {
+        // Try to connect to Web3 first
+        console.log('Attempting Web3 connections...')
+        
+        Web3Service.setCallbacks({
+          onGasUpdate: (chainId, gasData) => {
+            console.log(`Gas update for ${chainId}:`, gasData)
+            updateChainDataWithHistory(chainId, gasData)
+          },
+          onPriceUpdate: (price) => {
+            console.log('Price update:', price)
+            setUsdPrice(price)
+          },
+          onConnectionChange: (isConnected) => {
+            console.log('Connection status changed:', isConnected)
+            setConnectionStatus(isConnected)
+          }
+        })
+        
+        // Try to initialize providers with timeout
+        await Promise.race([
+          Web3Service.initializeProviders(),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Web3 initialization timeout')), 8000)
+          )
+        ])
+        
+        console.log('Web3 initialization successful')
+        setIsInitializing(false)
+        
+      } catch (error) {
+        console.warn('Web3 initialization failed, falling back to mock data:', error)
+        
+        // Setup mock data as fallback
+        const mockPrice = 3200 + Math.random() * 400
+        setUsdPrice(mockPrice)
+        
+        const mockGasData = {
+          ethereum: { 
+            baseFee: 15000000000, 
+            priorityFee: 2000000000, 
+            gasPrice: 17000000000, 
+            lastBlock: 18500000, 
+            timestamp: Date.now() 
+          },
+          polygon: { 
+            baseFee: 30000000000, 
+            priorityFee: 2000000000, 
+            gasPrice: 32000000000, 
+            lastBlock: 48900000, 
+            timestamp: Date.now() 
+          },
+          arbitrum: { 
+            baseFee: 100000000, 
+            priorityFee: 2000000000, 
+            gasPrice: 2100000000, 
+            lastBlock: 15600000, 
+            timestamp: Date.now() 
+          }
         }
+        
+        Object.entries(mockGasData).forEach(([chainId, data]) => {
+          updateChainDataWithHistory(chainId, data)
+        })
+        
+        setConnectionStatus(false)
+        setIsInitializing(false)
+        
+        console.log('Fallback to mock data complete')
       }
-      
-      console.log('Setting mock gas data:', mockGasData)
-      console.log('Setting mock USD price:', mockPrice)
-      
-      Object.entries(mockGasData).forEach(([chainId, data]) => {
-        updateChainDataWithHistory(chainId, data)
-      })
-      
-      setConnectionStatus(false)
-      setIsInitializing(false)
-      
-      console.log('App initialization complete with mock data')
     }
     
     initializeApp()
