@@ -154,24 +154,24 @@ export default function GasTrackerApp() {
         
         const mockGasData = {
           ethereum: { 
-            baseFee: 15000000000, 
+            baseFee: 15000000000 + Math.random() * 5000000000, 
             priorityFee: 2000000000, 
-            gasPrice: 17000000000, 
-            lastBlock: 18500000, 
+            gasPrice: 17000000000 + Math.random() * 5000000000, 
+            lastBlock: 18500000 + Math.floor(Math.random() * 100), 
             timestamp: Date.now() 
           },
           polygon: { 
-            baseFee: 30000000000, 
+            baseFee: 30000000000 + Math.random() * 10000000000, 
             priorityFee: 2000000000, 
-            gasPrice: 32000000000, 
-            lastBlock: 48900000, 
+            gasPrice: 32000000000 + Math.random() * 10000000000, 
+            lastBlock: 48900000 + Math.floor(Math.random() * 100), 
             timestamp: Date.now() 
           },
           arbitrum: { 
-            baseFee: 100000000, 
+            baseFee: 100000000 + Math.random() * 50000000, 
             priorityFee: 2000000000, 
-            gasPrice: 2100000000, 
-            lastBlock: 15600000, 
+            gasPrice: 2100000000 + Math.random() * 50000000, 
+            lastBlock: 15600000 + Math.floor(Math.random() * 100), 
             timestamp: Date.now() 
           }
         }
