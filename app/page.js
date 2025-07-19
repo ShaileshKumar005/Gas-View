@@ -192,43 +192,41 @@ export default function GasTrackerApp() {
   
   // Fallback periodic updates if Web3 is not working
   useEffect(() => {
-    if (!isConnected) {
-      const interval = setInterval(() => {
-        const mockPrice = 3200 + Math.random() * 400
-        setUsdPrice(mockPrice)
-        
-        const mockGasData = {
-          ethereum: { 
-            baseFee: 15000000000 + Math.random() * 5000000000, 
-            priorityFee: 2000000000, 
-            gasPrice: 17000000000 + Math.random() * 5000000000,
-            lastBlock: 18500000 + Math.floor(Math.random() * 100),
-            timestamp: Date.now()
-          },
-          polygon: { 
-            baseFee: 30000000000 + Math.random() * 10000000000, 
-            priorityFee: 2000000000, 
-            gasPrice: 32000000000 + Math.random() * 10000000000,
-            lastBlock: 48900000 + Math.floor(Math.random() * 100),
-            timestamp: Date.now()
-          },
-          arbitrum: { 
-            baseFee: 100000000 + Math.random() * 50000000, 
-            priorityFee: 2000000000, 
-            gasPrice: 2100000000 + Math.random() * 50000000,
-            lastBlock: 15600000 + Math.floor(Math.random() * 100),
-            timestamp: Date.now()
-          }
-        }
-        
-        Object.entries(mockGasData).forEach(([chainId, data]) => {
-          updateChainDataWithHistory(chainId, data)
-        })
-      }, 6000)
+    const interval = setInterval(() => {
+      const mockPrice = 3200 + Math.random() * 400
+      setUsdPrice(mockPrice)
       
-      return () => clearInterval(interval)
-    }
-  }, [isConnected, setUsdPrice, updateChainDataWithHistory])
+      const mockGasData = {
+        ethereum: { 
+          baseFee: 15000000000 + Math.random() * 5000000000, 
+          priorityFee: 2000000000, 
+          gasPrice: 17000000000 + Math.random() * 5000000000,
+          lastBlock: 18500000 + Math.floor(Math.random() * 100),
+          timestamp: Date.now()
+        },
+        polygon: { 
+          baseFee: 30000000000 + Math.random() * 10000000000, 
+          priorityFee: 2000000000, 
+          gasPrice: 32000000000 + Math.random() * 10000000000,
+          lastBlock: 48900000 + Math.floor(Math.random() * 100),
+          timestamp: Date.now()
+        },
+        arbitrum: { 
+          baseFee: 100000000 + Math.random() * 50000000, 
+          priorityFee: 2000000000, 
+          gasPrice: 2100000000 + Math.random() * 50000000,
+          lastBlock: 15600000 + Math.floor(Math.random() * 100),
+          timestamp: Date.now()
+        }
+      }
+      
+      Object.entries(mockGasData).forEach(([chainId, data]) => {
+        updateChainDataWithHistory(chainId, data)
+      })
+    }, 6000)
+    
+    return () => clearInterval(interval)
+  }, [setUsdPrice, updateChainDataWithHistory])
   
   const formatGasPrice = (gasPrice) => {
     return (gasPrice / 1e9).toFixed(2)
