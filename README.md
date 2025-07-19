@@ -60,6 +60,7 @@ costUSD = (baseFee + priorityFee) * 21000 * usdPrice
 Clone the repo:
 
 git clone https://github.com/ShaileshKumar005/Gas-View.git
+
 cd Gas-View
 
 Install dependencies:
